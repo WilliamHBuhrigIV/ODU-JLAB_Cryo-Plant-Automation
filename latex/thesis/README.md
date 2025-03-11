@@ -1,5 +1,5 @@
-> [!CLONE OF EXSISTING GIT TEMPLATE]
-> [LINK](https://github.com/oduwsdl/odusci-etd-template/)
+> [!IMPORTANT]
+> **[CLONE OF EXSISTING GIT TEMPLATE](https://github.com/oduwsdl/odusci-etd-template/)**
 
 # ODU College of Sciences LaTeX ETD Template
 
