@@ -1,0 +1,636 @@
+%  By Himarsha R. Jayanetti and Dr. Michele C. Weigle
+%  April 16, 2024
+%  https://github.com/oduwsdl/odusci-etd-template
+
+% This file is to be used as a class named, “odusci”.  The formatting of this class
+% corresponds to "The Old Dominion University Guide for the Preparation of Theses and
+% Dissertations" and input from the College of Sciences at ODU. 
+
+% This class is adapted from a package named, "ODUthesis", originally written by 
+% Dr. J. W. Van Orden, ODU Professor of Physics, and the “wsdlthesis” class 
+% file modified by Dr. Sawood Alam, ODU alumnus of the Department of Computer
+% Science and the Web Science and Digital Libraries (WS-DL) Research Group.
+
+%%%%% Required Packages %%%%%
+
+%Sub-figures
+\usepackage{floatrow}
+\floatsetup[table]{capposition=top}
+\usepackage[label font=bf,labelformat=simple]{subfig}
+\usepackage[labelsep=period]{caption}
+\floatsetup[figure]{style=plain,subcapbesideposition=top}
+%For sub-figures labeled as A, B, C, ...
+\renewcommand{\thesubfigure}{\Alph{subfigure}}
+% caption
+\DeclareCaptionListFormat{simple}{#1#2.}
+\captionsetup{justification=raggedright,singlelinecheck=false,labelsep=period} %for left aligning the figure captions
+\captionsetup{listformat=simple}
+\usepackage{graphicx}
+\usepackage{rotating} %For rotating large figure and caption lengthwise (landscape position)
+\usepackage{indentfirst}
+\usepackage{afterpage}
+\usepackage{ragged2e}
+\usepackage{fancyhdr}
+\usepackage{changepage}
+\usepackage{enumitem}
+\RequirePackage{afterpage} %needed for manual Page Head fix
+\RequirePackage{atbegshi} % needed for \shipout command
+\usepackage{titlecaps}
+\Addlcwords{all of the and a an is before on for but with in as the etc to if}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+\usepackage{listings} % For code listings
+% Default appearance of code listings (can update in main.tex)
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  frame=single,
+  breaklines=true,
+  moredelim=[is][\color{red}]{@}{@},
+  escapechar=\%
+}
+\usepackage{xcolor}
+
+
+\usepackage{url}      % For URL formatting
+%This will format the URL in a typewriter font and enable line-breaking if the URL is too long to fit on one line.
+
+\usepackage[]{appendix} %this environment enables you to include appendices inside the environment without messing up TOC
+
+%%%%%  References (using biblatex) %%%%% 
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{csquotes}
+
+
+%%%%% PhD vs MS %%%%%
+
+%Remove \phdtrue if this is a MS thesis
+\newif\ifphd
+\phdtrue
+
+%%%%% Nomenclature True %%%%%
+\newif\ifnomenclature
+%Change this to \nomenclaturetrue if you need a nomenclature
+\nomenclaturefalse
+% \nomenclaturetrue
+
+%%%%% CO-ADVISERS %%%%%
+
+%Change this to \onedirectorfalse if Co-Directors available
+\newif\ifonedirector
+\onedirectortrue
+% \onedirectorfalse
+
+%%%%%%%%%% %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% 
+% You do not need to make any alterations to any of the sections 
+%%%%%%%%%% %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% 
+
+%%%%% MARGINS & SPACES %%%%%
+
+%The margin should be consistent around the document: 1 inch
+\usepackage[margin=1in, headsep=0.5in]{geometry}
+%Two double spaces above and below figures 
+\setlength{\intextsep}{1.69cm}
+\setlength{\textfloatsep}{1.69cm}
+\setlength{\floatsep}{1.69cm}
+
+
+%%%%% Declaring Options - MS vs. PhD %%%%%
+
+\DeclareOption{diss}{\newif\ifphd \phdtrue}
+\DeclareOption{thesis}{\newif\ifphd }
+\ProcessOptions\relax
+
+
+%%%%% TITLE PAGE %%%%%
+
+\def\@title{}
+\def\@author{}
+
+\def\degrees#1{\gdef\@degrees{#1}}
+\def\@degrees{}
+
+
+\def\dept#1{\gdef\@dept{#1}}
+\def\@dept{computer science}
+
+\def\submitdate#1{\gdef\@submitdate{#1}}
+
+\ifonedirector 
+\def\principaladviser#1{\gdef\@principaladviser{#1}}
+\else
+\def\@coadvisers{}
+\def\coadvisers#1{\expandafter\def\expandafter\@coadvisers\expandafter
+{\@coadvisers{\signline{#1\ (Co-Director)}}}}
+\fi
+
+\def\signline#1{\\ #1 \\}
+              %   {\small #1} \\}  % COS wanted same font size
+                 
+\def\@member{}
+\def\member#1{\expandafter\def\expandafter\@member\expandafter
+{\@member{\signline{#1\ (Member)}}}}
+
+\def\titlep{%
+        \thispagestyle{empty}%
+        \centering
+                \def\baselinestretch{2.0}\@normalsize
+                \vspace*{-25pt}
+                {\bf\uppercase\expandafter{\@title}}\\
+                \renewcommand{\baselinestretch}{1.0}\@normalsize
+                \vspace{0.4cm}
+                 by\\
+                \vspace{0.43cm}
+                \@author\\
+                \@degrees\\
+                \vspace{1.45cm}
+                A \ifphd Dissertation \else Thesis \fi Submitted to the Faculty of\\
+                Old Dominion University in Partial Fulfillment of the\\
+                Requirements for the Degree of\\
+                \vspace{0.4cm}
+                \ifphd \uppercase{Doctor of Philosophy} \else \uppercase{Master of Science}\fi \\
+                \vspace{0.45cm}
+                \uppercase\expandafter{\@dept}\\
+                \vspace{0.45cm}
+                \uppercase{Old Dominion University}\\
+                \@submitdate\\
+        \vspace{1.85cm}
+        \hfill\parbox[t]{2.5in}{Approved by:\\
+                            \ifonedirector
+                            \signline{\@principaladviser\ (Director)}
+                            \else
+                            \@coadvisers
+                            \fi
+                            \@member}
+        \vfill\newpage}
+
+%%%%% ABSTRACT PAGE %%%%%
+\def\abstract#1{\def\@abstract{#1}}
+
+\def\abstractpage{\pagestyle{empty}%
+        \centering{
+                {\bf ABSTRACT}\\
+                \vspace{0.42cm}
+                {\uppercase\expandafter{\@title}}\\
+                \vspace{0.42cm}
+                \@author\\
+                Old Dominion University, \number\the\year\\
+                % Need to be fixed in case of two directors (see bottom of pg. 25 in the guide).
+                % \ifonedirector
+                % Director: Dr. \@principaladviser
+                % \else
+                % Co-Directors:\@coadvisers
+                % \fi
+                Director: Dr. \@principaladviser
+                \vspace{1.13cm}
+            
+        }
+        \justifying
+        \par
+        \def\baselinestretch{2.0}\@normalsize
+        \@abstract
+        \vfill\newpage}
+
+
+%%%%% COPYRIGHT PAGE %%%%%
+
+\def\copyrightyear#1{\gdef\@copyrightyear{#1}} % \author, \title in report
+
+\def\@submitdate{\ifcase\the\month\or
+January\or February\or March\or April\or May\or June\or
+July\or August\or September\or October\or November\or December\fi
+\space \number\the\year}
+\ifnum\month=12
+\@tempcnta=\year \advance\@tempcnta by 1
+\edef\@copyrightyear{\number\the\@tempcnta}
+\else
+\def\@copyrightyear{\number\the\year}
+\fi
+
+\def\copyrightpage{%
+
+\pagestyle{myheadings}
+
+\begin{center}
+
+\topskip0pt
+
+\vspace*{\fill}
+
+Copyright, \@copyrightyear, by \@author, All Rights Reserved.
+
+\end{center}
+
+\vspace*{\fill}
+
+\newpage}
+
+
+%%%%% Dedication Page %%%%%
+\def\dedication#1{\def\@dedication{#1}}
+
+\def\dedicationpage{\def\baselinestretch{2.0}\@normalsize\pagestyle{myheadings}%
+        \begin{center}
+            \@dedication
+        \end{center}
+        \par
+        \vfill\newpage}
+
+%%%%% Acknowledgement Page %%%%%
+\def\acknowledge#1{\def\@acknowledge{#1}}
+
+\def\ackpage{\def\baselinestretch{2.0}\@normalsize\pagestyle{myheadings}%
+        \centering {                                 
+        \renewcommand{\baselinestretch}{1.0}\@normalsize
+            {\bf ACKNOWLEDGMENTS}
+            \vspace{1.13cm}
+            
+        }
+        \justifying    
+        \par
+        \@acknowledge
+        \vfill\newpage}
+
+
+%%%%% Nomenclature Page %%%%%
+
+\def\nomenclature#1{\def\@nomenclature{#1}}
+
+\def\nomenclaturepage{\def\baselinestretch{2.0}\@normalsize\pagestyle{myheadings}%
+        \centering {                                 
+        \renewcommand{\baselinestretch}{1.0}\@normalsize
+            {\bf NOMENCLATURE}
+            \vspace{1.13cm}
+            
+        }
+        \raggedright
+        \@nomenclature
+        \vfill\newpage}
+
+
+%%%%% VITA PAGE %%%%%
+\def\vita#1{\gdef\@vita{#1}}
+
+\def\vitapage{\def\baselinestretch{2}\@normalsize\pagestyle{myheadings}
+              \chapter*{VITA}
+              \addtocontents{toc}{\vspace*{0.42cm}} %Gap between appendices and vita
+              \addcontentsline{toc}{chapter}{VITA}
+              \begin{flushleft}
+                 \@author\\
+                 Department of \@dept \\
+                 Old Dominion University \\
+                 Norfolk, VA 23529
+              \end{flushleft}
+              \@vita
+              \vfill
+    
+}
+
+
+
+%%%%% Section Definition - Before and After Acknowledgement Page %%%%%
+\def\beforepreface{
+        \pagenumbering{roman}
+        \pagestyle{empty}
+        \newpage
+        \titlep
+      \cleardoublepage
+        \abstractpage
+      \cleardoublepage
+        \ifcopyright\copyrightpage\fi 
+      \cleardoublepage
+        \dedicationpage
+      \cleardoublepage
+        \ackpage
+    \ifnomenclature{
+      \cleardoublepage
+        \nomenclaturepage}\fi
+}
+
+% \def\prefacesection#1{%
+%       \pagestyle{myheadings}
+%       \cleardoublepage
+%         \def\baselinestretch{1.3}\@normalsize
+%         \chapter*{#1}}
+
+\def\afterpreface{\cleardoublepage
+        \def\baselinestretch{1}\@normalsize
+        \renewcommand{\MyShipoutHook}{\tocShipoutHook}
+        \AtBeginShipout{\MyShipoutHook}
+        \tableofcontents
+        \renewcommand{\MyShipoutHook}{}
+        \cleardoublepage
+        \iftablespage
+                {\addcontentsline{toc}{chapter}{\uppercase{List of Tables}}
+                
+                \addvspace{10pt}
+                \let\saveaddvspace=\addvspace
+                \def\addvspace##1{}
+                \renewcommand{\MyShipoutHook}{\lotShipoutHook}
+                \listoftables
+                \renewcommand{\MyShipoutHook}{}
+                \let\addvspace=\saveaddvspace
+                \let\addvspace=\saveaddvspace}
+                \addtocontents{toc}{\vspace*{0.42cm}}
+                \cleardoublepage
+        \fi
+        \iffigurespage
+                {\addcontentsline{toc}{chapter}{\uppercase{List of Figures}}
+                 \addvspace{10pt}
+                \let\saveaddvspace=\addvspace
+                \def\addvspace##1{}
+                \renewcommand{\MyShipoutHook}{\lofShipoutHook}
+                \listoffigures
+                \renewcommand{\MyShipoutHook}{}
+                 \let\addvspace=\saveaddvspace
+                \let\addvspace=\saveaddvspace}
+                \cleardoublepage
+        \fi
+        \def\baselinestretch{1.3}\@normalsize
+        \pagenumbering{arabic}
+        \pagestyle{myheadings}
+        \labelchaptersintableofcontents}
+
+%%%%% Table of Contents Page %%%%%
+
+%Depth of table of contents is only chapter and section level
+\setcounter{tocdepth}{1}
+
+\renewcommand\@dotsep{0.5}	% MCW: space between dots (section level)
+\renewcommand{\dotfill}{%
+  \leavevmode\cleaders\hbox to 0.3em{\hss .\hss }\hfill\kern0pt }
+%Align page numbers in toc  
+\renewcommand{\@pnumwidth}{0pt{}}
+
+\def\tableofcontents{\pagestyle{myheadings}\chapter*{Table of Contents}
+ 
+ \def\baselinestretch{1.0}\@normalsize
+ \@starttoc{toc}
+ \addtocontents{toc}{\hfill Page\par}
+ % Comment the below if we want same spacing like rest of the document
+ \addtocontents{toc}{\protect \vspace{0.42cm}} %Space between "Page" and next line 
+ }
+
+\renewcommand*\l@chapter[2]{%
+  \ifnum \c@tocdepth >\m@ne
+    \addpenalty{-\@highpenalty}%
+    \vskip 0.1em \@plus\p@
+    \setlength\@tempdima{7mm}%Distance between the chapter title and the chapter number in toc
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode 
+      
+       #1\nobreak\dotfill \nobreak\hb@xt@\@pnumwidth{#2}\par 
+        \penalty\@highpenalty
+    \endgroup
+  \fi}
+
+%List of Figures and Tables Setup
+\def\listoffigures{\chapter*{List of Figures}
+ 
+ \def\baselinestretch{1.0}\@normalsize
+ {\setlength{\parskip}{12\p@} \@starttoc{lof}}
+ \addtocontents{lof}{\noindent Figure\hfill Page\par}
+}
+
+%\@dottedtocline{1} then Distance {before figure number} and {between figure number and title}
+\renewcommand*\l@figure{\@dottedtocline{1}{0mm}{7mm}}
+\renewcommand*\l@table{\@dottedtocline{1}{0mm}{7mm}}
+\renewcommand*\l@chapter{\@dottedtocline{1}{0mm}{7mm}}%Fix for getting chapter titles wrapped
+
+
+\def\listoftables{\chapter*{List of Tables}
+
+ \def\baselinestretch{1.0}\@normalsize
+ {\setlength{\parskip}{12\p@} \@starttoc{lot}}%
+ \addtocontents{lot}{\noindent Table\hfill Page\par}
+}
+
+%%%%% Chapter, Section %%%%%
+
+% Start with pagestyle{myheadings} in case the front matter isn't processed
+\pagestyle{myheadings}
+\markboth{}{}
+
+
+% FRW added custom footnote without number for document style phrase
+%
+\def\nnfootnote{%
+     \@ifnextchar [\@xfootnotenext
+       {\protected@xdef%
+%       \@thefnmark{\thempfn}%   removed the number from FOOTNOTETEXT command:
+        \@thefnmark{ }%
+    \@footnotetext}}
+%
+\renewcommand{\chapter}{\if@openright\cleardoublepage\else\clearpage\fi
+                   \thispagestyle{myheadings}%
+                   \def\baselinestretch{2.0}\@normalsize
+                    \global\@topnum\z@
+                    \@afterindentfalse
+                    \secdef\@chapter\@schapter}
+\def\@chapter[#1]#2{\ifnum \c@secnumdepth >\m@ne
+                         \refstepcounter{chapter}%
+                        
+                        %  Printing to logs            
+                        % \typeout{\@chapapp\space\thechapter}%
+                        \addtocontents{toc}{\protect \vspace{0.42cm}}
+                         \addcontentsline{toc}{chapter}
+                                   {\protect\numberline{\thechapter.}\uppercase{#1}}%
+                    \else
+                      \addcontentsline{toc}{chapter}{\uppercase{#1}}%
+                    \fi
+
+                    \if@twocolumn
+                      \@topnewpage[\@makechapterhead{#2}]%
+                    \else
+                      \@makechapterhead{#2}%
+                      \@afterheading
+                    \fi}
+\def\@makechapterhead#1{%
+%  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright \normalfont
+    \ifnum \c@secnumdepth >\m@ne
+        \centering
+        \bfseries \@chapapp \space \thechapter
+        \par\nobreak
+        \vskip 0.85cm
+    \fi
+    \interlinepenalty\@M
+    \centering
+    \bfseries \uppercase{#1}
+    \vskip 0.85cm
+  }}
+\def\@schapter#1{\if@twocolumn                   
+                    \@topnewpage[\@makeschapterhead{#1}]%
+                 \else
+                   \@makeschapterhead{#1}%
+                   \@afterheading
+                 \fi}
+\def\@makeschapterhead#1{%
+  %\vspace*{50\p@}%
+  {\parindent \z@ \raggedright
+    \normalfont
+    \interlinepenalty\@M
+     \begin{center}
+     \bfseries  \uppercase{#1}
+     \end{center}
+     \par\nobreak
+   \vskip 18\p@
+  }}
+    
+
+\renewcommand{\section}{
+                    \secdef\@section\@ssection}
+                    
+\def\@section[#1]#2{\ifnum \c@secnumdepth >\m@ne
+                         \refstepcounter{section}%
+                         \addcontentsline{toc}{section}%
+                        {\protect\hspace{0.6cm}\!\numberline{\thesection}\uppercase{#1}}
+    %\hspace{0.6cm} to indent the section number and title to fall under "T" in INTRODUCTION in toc
+                    \else
+                      \addcontentsline{toc}{section}{\uppercase{#1}}%
+                    \fi
+                       \@makesectionhead{#2}%
+                     }
+\def\@makesectionhead#1{%
+        \vskip 0.42cm
+         {\bfseries \noindent \thesection\space\parbox[t]{5.5in}{\raggedright\uppercase{#1}}}
+        \vskip 0.42cm
+  }
+\def\@ssection#1{
+                   \@makessectionhead{#1}%
+                 }
+\def\@makessectionhead#1{%
+        \vskip 0.42cm
+     {\bfseries \noindent \raggedright\uppercase{#1}}
+   \vskip 0.42cm
+  }
+
+\renewcommand{\subsection}{
+                    \secdef\@subsection\@ssubsection}
+\def\@subsection[#1]#2{\ifnum \c@secnumdepth >\m@ne
+                         \refstepcounter{subsection}%
+                         \addcontentsline{toc}{subsection}%
+                                   {\protect\numberline{\thesubsection}\uppercase{#1}}%
+                     \fi
+                       \@makesubsectionhead{#2}%
+                     }
+\def\@makesubsectionhead#1{%
+        \vskip 0.42cm
+        {\bfseries \noindent \raggedright\thesubsection\space\titlecap{#1}}
+        \vskip 0.42cm
+  }
+\def\@ssection#1{
+                   \@makessubsectionhead{#1}%
+                 }
+\def\@makessubsectionhead#1{%
+        \vskip 0.42cm
+     {\bfseries \noindent \raggedright\uppercase{#1}}
+   \vskip 0.42cm
+  }
+
+\newcommand{\achapter}{\if@openright\cleardoublepage\else\clearpage\fi
+                    \global\@topnum\z@
+                    \@afterindentfalse
+                    \secdef\@achapter\@schapter}
+\def\@achapter[#1]#2{\ifnum \c@secnumdepth >\m@ne
+                         \refstepcounter{chapter}%
+                         \typeout{\@chapapp\space\thechapter}%
+                         \addcontentsline{toc}{section}%
+                                   {\protect\hspace{0.7cm}\!\numberline{\thechapter.}\uppercase{#1}}
+                            % To align the appendix title to fall under "D" in APPENDICES in toc
+                    \else
+                      \addcontentsline{toc}{section}{\uppercase{#1}}%
+                    \fi
+                    \if@twocolumn
+                      \@topnewpage[\@makeachapterhead{#2}]%
+                    \else
+                      \@makeachapterhead{#2}%
+                      \@afterheading
+                    \fi}
+\def\@makeachapterhead#1{%
+%  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright \normalfont
+    % \renewcommand{\baselinestretch}{2}
+    \ifnum \c@secnumdepth >\m@ne
+%        \centerline{\bfseries \@chapapp\space \thechapter}
+        \centering
+        \bfseries \@chapapp\space \thechapter
+        % \justifying
+        \par\nobreak
+        \vskip 0.85cm
+    \fi
+    \interlinepenalty\@M
+ %    \centerline{\bfseries \uppercase{#1}}\par\nobreak
+    
+    \centering
+    \bfseries \uppercase{#1}
+    \vskip 0.85cm
+  }}
+     
+%%%%% \newif definitions %%%%%
+\newif\ifcopyright \newif\iffigurespage \newif\iftablespage
+\copyrighttrue \figurespagetrue \tablespagetrue
+
+%Table of contents second page
+\newcommand{\tocShipoutHook}{~\hfill{Page}\par\vspace{0.42cm}} % MCW July 2024
+% \newcommand{\tocShipoutHook}{\noindent{Chapter}~\hfill{Page}\par\vspace{0pt}}
+
+%Table of figures second page
+\newcommand{\lofShipoutHook}{\noindent{Figure}~\hfill{Page}\par\vspace{0pt}}
+
+%Table of figures second page
+\newcommand{\lotShipoutHook}{\noindent{Table}~\hfill{Page}\par\vspace{0pt}}
+\newcommand{\MyShipoutHook}{}
+
+\def\cl@chapter{\@elt{section}\@elt{footnote}}	
+\def\thefigure{\@arabic\c@figure}	
+\def\thetable{\@arabic\c@table}	
+\def\thechapter{\@arabic\c@chapter}	
+\def\theequation{\arabic{equation}}	
+
+% This needed to be changed to use with babel package
+\addto\captionsenglish{\renewcommand{\chaptername}{CHAPTER}}
+\addto\captionsenglish{\renewcommand{\appendixname}{APPENDIX}}
+
+\newcommand{\labelchaptersintableofcontents}{%
+     \addtocontents{toc}{\vspace*{0.42cm}} %Gap between list of figures and "chapter" in TOC
+    \addtocontents{toc}{\noindent Chapter}
+              \addtocontents{toc}{} }
+\newcommand{\labelappendicesintableofcontents}{%
+     \addtocontents{toc}{\vspace*{0.42cm}} %Gap between "references" and "chapter" in TOC
+     \addtocontents{toc}{\noindent APPENDICES}
+     \addtocontents{toc}{}}
+\renewcommand{\appendix}{\par
+  \setcounter{chapter}{0}%
+  \setcounter{section}{0}%
+  \labelappendicesintableofcontents%
+  %\typeout{Hello: \@chapapp{\appendixname}%print to logs
+  \gdef\@chapapp{\appendixname}%CHAPTER{APPENDIX}
+  \gdef\thechapter{\@Alph \c@chapter}
+%   \gdef\thechapter{\hspace{5mm}\@Alph \c@chapter}
+  }
+
+%For Styling Figure Captions
+\RequirePackage[labelfont={bf},%removed sf
+                labelsep=period,%
+                figurename=Figure,
+                tablename=Table]{caption}    
+
+
+%For Styling Table Captions
+\RequirePackage{etoolbox}
+\captionsetup*[table]{labelfont+={bf},skip=10pt,position=above}
+
+% this environment enables you to \include 
+% appendices inside the environment without messing up toc
+\newenvironment{Appendices}
+  {
+    \appendix
+    \begin{appendices}
+  }
+  {
+    \end{appendices}
+  }
