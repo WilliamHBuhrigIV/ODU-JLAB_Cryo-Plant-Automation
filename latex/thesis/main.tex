@@ -1,138 +1,62 @@
-%%  By Himarsha R. Jayanetti and Dr. Michele C. Weigle
-%%  April 16, 2024
-
-%% The font size of the dissertation should be consistent at 12 pt
 \documentclass[12pt]{report}
+\usepackage[thesis]{odusci}  
+\usepackage{longtable}
+\newcommand{\cc}[1]{}
+\usepackage[backend=bibtex, style=science, sorting=nyt, maxnames=10, minnames=10]{biblatex}
+\usepackage{setspace}
 
-%%%%% Thesis or Dissertation Selection %%%%% 
-\usepackage[diss]{odusci}  
-% for MS thesis, replace diss with thesis
-% \usepackage[thesis]{odusci}
-
-%%%%% Citation Style %%%%% 
-%% Uncomment the appropriate line for your discipline
-%% IEEE
-\usepackage[style=ieee, sorting=nyt, maxnames=10, minnames=10]{biblatex}
-%% APA
-% \usepackage[style=apa, sorting=nyt, maxnames=10, minnames=10]{biblatex}
-%% Science 
-% \usepackage[style=science, sorting=nyt, maxnames=10, minnames=10]{biblatex}
-
-%% add BibTeX file
 \addbibresource{ref.bib}
-
-% Adjust the options below to refine the appearance of code listings
-\lstset{
-  basicstyle=\sffamily,
-  columns=fullflexible,
-  frame=single,
-  breaklines=true,
-  moredelim=**[is][\color{red}]{@}{@},
-  escapechar=\%
-}
-
-%% ***DO NOT CHANGE OR COMMENT THE NEXT LINE*** 
-\setlength\intextsep{1.69cm} % to set space above/below the floats and text 
+\setlength\intextsep{1.69cm}
 \begin{document}
-
-%%%%% TITLE PAGE %%%%% 
-\title{THE TITLE OF THE DISSERTATION. PLEASE REPLACE THE TEXT HERE WITH YOUR TITLE}
-
-\author{Jane Ann Doe}
-
-%% US degree
-\degrees{B.S. July 2017, Stanford University \\
-         M.S. July 2020, Stanford University}
-
-%% Use the following format if the prior degrees are outside of the US. 
-%% University and Country must be all in a single line.
-% \degrees{B.S. July 2017, University of Oxford, United Kingdom \\
-%          M.S. July 2020, University of Oxford,  United Kingdom}
-
-%% Department
-\dept{Computer Science}
-
-%% Generates Copyright page, do not uncomment for thesis or dissertation
-%\copyrightfalse
-
-%% submit date must use either "May", "August", or "December" for the month
-\submitdate{May 2024}
-% \submitdate{August 2024}
-% \submitdate{December 2024}
-
-%% Default is for a single adviser
-\principaladviser{Director Name}
-\member{Member Name}
-\member{Member Name}
-\member{Member Name}
-
-%% Co-advisers - uncomment below if required
-% \coadvisers{Director Name1}
-% \coadvisers{Director Name2}
-% \member{Member Name}
-% \member{Member Name}
-% \member{Member Name}
-%% See https://github.com/oduwsdl/odusci-etd-template/blob/main/README.md
-%% for instructions on adjusting odusci.sty to allow co-advisers
+\title{Development of an Autonomous Cryogenics Plant Cool-Down}
+\author{William Harris Buhrig IV}
+\degrees{B.S. December 2023, Old Dominion University\\A.S. May 2022, Tidewater Community College}
+\dept{Mechanical Engineering}
+\submitdate{December 2025}
+\principaladviser{K.N. Kaipa}
+\coadviser{Brian Mastracci}
+\member{Geoffrey Kraft}
+\member{Jean Delayen}
 
 %%%%% FRONT MATTER %%%%% 
 
 %% Abstract - maximum 350 words
-\abstract{Lorem ipsum dolor sit amet, consectetur adipiscing elit. In non molestie odio. Pellentesque volutpat, sem a viverra dictum, leo est scelerisque risus, ut convallis dui nulla a lacus. Proin mi magna, pharetra non ante sit amet, euismod lobortis odio. Donec gravida eu elit quis sagittis. Duis consequat, elit in fermentum rutrum, tellus dolor sodales ante, ac aliquam libero purus eu nisi. In aliquam nibh maximus varius blandit. Sed consequat libero faucibus vehicula gravida. Suspendisse vitae nisi ex. Quisque gravida risus ac dapibus blandit. Vestibulum mollis sollicitudin justo. Donec vel ipsum non ligula efficitur consequat. Morbi vulputate feugiat diam, rhoncus vehicula eros posuere vitae. Pellentesque sed egestas metus. Vestibulum libero elit, euismod quis vestibulum nec, vulputate at risus. In accumsan sem eu porta ultrices. Quisque sagittis massa felis, eget varius metus semper id. Vivamus tincidunt ipsum sem, sit amet eleifend diam tempor nec. Vivamus elementum, diam id lobortis mattis, nisi lacus.} 
+\abstract{This paper aims to outline the possible structure and application of a high-level planned control system to adjust and modify existing control structures implemented on all Thomas Jefferson National Laboratory (JLab) Cryogenic Refrigeration Plants to allow for future Autonomous cool-downs.}
 
 %% Dedication - optional, 1 page max
-\dedication{I dedicate my dissertation ... Morbi vulputate feugiat diam, rhoncus vehicula eros posuere vitae. Pellentesque sed egestas metus.}
+\dedication{This dedication is for my Mom because you've been there through it all. Your support and understanding mean everything to me. We've definitely got the ticket now.}
 
 %% Acknowledgements
-\acknowledge{I would like to thank...Lorem ipsum dolor sit amet, consectetur adipiscing elit. In non molestie odio. Pellentesque volutpat, sem a viverra dictum, leo est scelerisque risus, ut convallis dui nulla a lacus. Proin mi magna, pharetra non ante sit amet, euismod lobortis odio. Donec gravida eu elit quis sagittis. Duis consequat, elit in fermentum rutrum, tellus dolor sodales ante, ac aliquam libero purus eu nisi. In aliquam nibh maximus varius blandit. Sed consequat libero faucibus vehicula gravida. Suspendisse vitae nisi ex. Quisque gravida risus ac dapibus blandit. Vestibulum mollis sollicitudin justo. Donec vel ipsum non ligula efficitur consequat. 
-%% If you want multiple paragraphs, must add a newline and indent as below
-\\ \indent 
-Morbi vulputate feugiat diam, rhoncus vehicula eros posuere vitae. Pellentesque sed egestas metus. Vestibulum libero elit, euismod quis vestibulum nec, vulputate at risus. In accumsan sem eu porta ultrices. Quisque sagittis massa felis, eget varius metus semper id. Vivamus tincidunt ipsum sem, sit amet eleifend diam tempor nec. Vivamus elementum, diam id lobortis mattis, nisi lacus.}
+\acknowledge{I want to start my list of acknowledgments with Dr. Geoffrey Kraft for giving me the opportunity in the first place to get where I am today by offering me a tour of the Old Dominion Center for Accelerator Physics and giving me the choice to join the Virginia Innovative Traineeships in Accelerators program.  Followed by both Dr. Krishnanand N. Kaipa and Brian Mastracci for always being there to support me in my goals.  I want to also acknowledge the entirety of the Cryogenics Department at Thomas Jefferson National Laboratory for being so supportive and providing so many affable conversations.\cc{If you want multiple paragraphs \\ \indent}}
 
-%% Nomenclature - optional, uncomment below if required 
-% \nomenclature{
-% \begin{tabular}{ll}
-% \textit{A} & Amplitude Ratio, (No Unites) \\   
-% \textit{C} & Centroid of pipe, inches \\ 
-% \textit{Do} & Outside Diameter of Pipe, inches \\ 
-% \textit{ZNom} & Section Modulus, in3 \\ 
-%  \end{tabular}
-% }
-%% See https://github.com/oduwsdl/odusci-etd-template/blob/main/README.md
-%% for instructions on adjusting odusci.sty to include nominclature
+%%%%% Nomenclature %%%%%
+\input{Chapters/00_nomenclature}
 
 %%%%% Before and After Acknowledgement Page %%%%%
-%% ***DO NOT CHANGE OR COMMENT THE NEXT TWO LINES*** 
-    \beforepreface
-    \afterpreface
+\beforepreface
+\afterpreface
 
 %%%%% CHAPTERS %%%%% 
-%% It is recommended to put the contents of each chapter in a 
-%% separate .tex file in the "Chapters" folder and include them as below.  
 \input{Chapters/01_introduction}
-\input{Chapters/02_background}
-\input{Chapters/03_relatedwork}
-\input{Chapters/04_aurum}
-\input{Chapters/05_boreas}
-\input{Chapters/06_concordia}
-\input{Chapters/88_futurework}
-\input{Chapters/89_conclusion}
-
+\input{Chapters/02_literatureReview}
+\input{Chapters/03_plantModel}
+\input{Chapters/04_controlModel}
+\input{Chapters/05_dataAcquisition}
+\input{Chapters/06_dataAnalysis}
+\input{Chapters/96_futureWork}
+\input{Chapters/97_conclusion}
 \cleardoublepage
 
 %%%%% REFERENCES %%%%% 
-\addtocontents{toc}{\vspace*{12pt}} % gap between last chapter and references in the table of contents
-\printbibliography[heading=bibintoc, title={REFERENCES}]
+\addtocontents{toc}{\vspace*{12pt}}
+\nocite{*}
+\printbibheading[heading=bibintoc, title={REFERENCES}]
+\printbibliography[keyword={primary}, heading=none]
+\printbibliography[keyword={supplemental}, heading=subbibintoc, title={SUPPLEMENTAL SOURCES CONSULTED}]
 
 %%%%% APPENDICES %%%%% 
-%% Comment the lines below if you do not have any appendices
-\begin{Appendices}
-\include{Chapters/98_appendices} % First appendix file
-\include{Chapters/98_appendices2} % Second appendix file
-% You can add more .tex files as needed
-\end{Appendices}
+\input{Chapters/98_appendices}
 
 %%%%% VITA - max 1 page %%%%% 
-\include{Chapters/99_vita}
-
+\input{Chapters/99_vita}
 \end{document}

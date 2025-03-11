@@ -39,23 +39,6 @@
 \Addlcwords{all of the and a an is before on for but with in as the etc to if}
 \usepackage[T1]{fontenc}
 \usepackage{mathptmx}
-\usepackage{listings} % For code listings
-% Default appearance of code listings (can update in main.tex)
-\lstset{
-  basicstyle=\ttfamily,
-  columns=fullflexible,
-  frame=single,
-  breaklines=true,
-  moredelim=[is][\color{red}]{@}{@},
-  escapechar=\%
-}
-\usepackage{xcolor}
-
-
-\usepackage{url}      % For URL formatting
-%This will format the URL in a typewriter font and enable line-breaking if the URL is too long to fit on one line.
-
-\usepackage[]{appendix} %this environment enables you to include appendices inside the environment without messing up TOC
 
 %%%%%  References (using biblatex) %%%%% 
 \usepackage[utf8]{inputenc}
@@ -67,20 +50,20 @@
 
 %Remove \phdtrue if this is a MS thesis
 \newif\ifphd
-\phdtrue
+%\phdtrue
 
 %%%%% Nomenclature True %%%%%
 \newif\ifnomenclature
 %Change this to \nomenclaturetrue if you need a nomenclature
-\nomenclaturefalse
-% \nomenclaturetrue
+%\nomenclaturefalse
+\nomenclaturetrue
 
 %%%%% CO-ADVISERS %%%%%
 
 %Change this to \onedirectorfalse if Co-Directors available
-\newif\ifonedirector
-\onedirectortrue
-% \onedirectorfalse
+%\newif\ifonedirector
+%%\onedirectortrue
+%\onedirectorfalse
 
 %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% %%%%%%%%%% 
 % You do not need to make any alterations to any of the sections 
@@ -117,20 +100,19 @@
 
 \def\submitdate#1{\gdef\@submitdate{#1}}
 
-\ifonedirector 
+%\ifonedirector 
 \def\principaladviser#1{\gdef\@principaladviser{#1}}
-\else
-\def\@coadvisers{}
-\def\coadvisers#1{\expandafter\def\expandafter\@coadvisers\expandafter
-{\@coadvisers{\signline{#1\ (Co-Director)}}}}
-\fi
+\def\coadviser#1{\gdef\@coadviser{#1}}
+%\else
+%\def\@coadviser{}
+%\def\coadviser#1{\expandafter\def\expandafter\@coadviser\expandafter{\@coadviser{\signline{#1\ (Co-Director)}}}}
+%\fi
 
 \def\signline#1{\\ #1 \\}
-              %   {\small #1} \\}  % COS wanted same font size
+%              %   {\small #1} \\}  % COS wanted same font size
                  
 \def\@member{}
-\def\member#1{\expandafter\def\expandafter\@member\expandafter
-{\@member{\signline{#1\ (Member)}}}}
+\def\member#1{\expandafter\def\expandafter\@member\expandafter{\@member{\signline{#1\ (Member)}}}}
 
 \def\titlep{%
         \thispagestyle{empty}%
@@ -157,11 +139,13 @@
                 \@submitdate\\
         \vspace{1.85cm}
         \hfill\parbox[t]{2.5in}{Approved by:\\
-                            \ifonedirector
-                            \signline{\@principaladviser\ (Director)}
-                            \else
-                            \@coadvisers
-                            \fi
+%                            \ifonedirector
+%                            \signline{\@principaladviser\ (Director)}
+%                            \else
+%                            \@coadviser
+%                            \fi
+							\signline{\@principaladviser\ (Director)}
+							\signline{\@coadviser\ (Co-Director)}
                             \@member}
         \vfill\newpage}
 
@@ -177,11 +161,11 @@
                 \@author\\
                 Old Dominion University, \number\the\year\\
                 % Need to be fixed in case of two directors (see bottom of pg. 25 in the guide).
-                % \ifonedirector
-                % Director: Dr. \@principaladviser
-                % \else
-                % Co-Directors:\@coadvisers
-                % \fi
+%                \ifonedirector
+%                Director: Dr. \@principaladviser
+%                \else
+%                Co-Directors:\@coadviser
+%                \fi
                 Director: Dr. \@principaladviser
                 \vspace{1.13cm}
             
@@ -218,7 +202,7 @@ July\or August\or September\or October\or November\or December\fi
 
 \vspace*{\fill}
 
-Copyright, \@copyrightyear, by \@author, All Rights Reserved.
+\textcopyright\ Copyright, \@copyrightyear, by \@author, All Rights Reserved.
 
 \end{center}
 
@@ -255,18 +239,23 @@ Copyright, \@copyrightyear, by \@author, All Rights Reserved.
 
 %%%%% Nomenclature Page %%%%%
 
-\def\nomenclature#1{\def\@nomenclature{#1}}
+%\def\nomenclature[2]{\def\@nomenclature{#1}\def\@subnomenclature{#1}}
 
-\def\nomenclaturepage{\def\baselinestretch{2.0}\@normalsize\pagestyle{myheadings}%
-        \centering {                                 
-        \renewcommand{\baselinestretch}{1.0}\@normalsize
-            {\bf NOMENCLATURE}
-            \vspace{1.13cm}
-            
-        }
-        \raggedright
-        \@nomenclature
-        \vfill\newpage}
+\newcommand{\nomenclature}[2]{\def\@nomenclature{#1}\def\@subnomenclature{#2}}
+
+\def\nomenclaturepage{\def\baselinestretch{2.0}\@normalsize\pagestyle{myheadings}
+\centering{
+	\renewcommand{\baselinestretch}{1.0}
+	\@normalsize{\bf NOMENCLATURE}
+	\vspace{1.13cm}\\
+}
+\raggedright
+\@nomenclature
+%\vspace{0.57cm}
+\@normalsize{\bf Subscripts}
+%\vspace{0.57cm}\\
+\@subnomenclature
+\vfill\newpage}
 
 
 %%%%% VITA PAGE %%%%%
@@ -381,9 +370,9 @@ Copyright, \@copyrightyear, by \@author, All Rights Reserved.
       \parindent \z@ \rightskip \@pnumwidth
       \parfillskip -\@pnumwidth
       \leavevmode 
-      
-       #1\nobreak\dotfill \nobreak\hb@xt@\@pnumwidth{#2}\par 
-        \penalty\@highpenalty
+       
+    #1\nobreak\dotfill \nobreak\hb@xt@\@pnumwidth{#2}\par 
+      \penalty\@highpenalty
     \endgroup
   \fi}
 
@@ -575,7 +564,7 @@ Copyright, \@copyrightyear, by \@author, All Rights Reserved.
 \copyrighttrue \figurespagetrue \tablespagetrue
 
 %Table of contents second page
-\newcommand{\tocShipoutHook}{~\hfill{Page}\par\vspace{0.42cm}} % MCW July 2024
+\newcommand{\tocShipoutHook}{~\hfill{Page}\par\vspace{0pt}}
 % \newcommand{\tocShipoutHook}{\noindent{Chapter}~\hfill{Page}\par\vspace{0pt}}
 
 %Table of figures second page
@@ -612,25 +601,32 @@ Copyright, \@copyrightyear, by \@author, All Rights Reserved.
   \gdef\thechapter{\@Alph \c@chapter}
 %   \gdef\thechapter{\hspace{5mm}\@Alph \c@chapter}
   }
+  
+% To wrap the text in the list of figures and the list of tables under the numbering. 
+% Credit goes to PhD student Keegan Sherman for help with this fix.  
+\usepackage{titletoc}
+\titlecontents{table}[0mm] % Set up list of tables
+    {}
+    {\thecontentslabel\quad}
+    {}
+    {\dotfill\thecontentspage}
+    
+\titlecontents{figure}[0mm] % Set up list of figures
+    {}
+    {\thecontentslabel\quad}
+    {}
+    {\dotfill\thecontentspage}  
 
+    
+  
 %For Styling Figure Captions
 \RequirePackage[labelfont={bf},%removed sf
                 labelsep=period,%
                 figurename=Figure,
-                tablename=Table]{caption}    
-
+                tablename=Table]{caption}
+    
 
 %For Styling Table Captions
 \RequirePackage{etoolbox}
 \captionsetup*[table]{labelfont+={bf},skip=10pt,position=above}
 
-% this environment enables you to \include 
-% appendices inside the environment without messing up toc
-\newenvironment{Appendices}
-  {
-    \appendix
-    \begin{appendices}
-  }
-  {
-    \end{appendices}
-  }
