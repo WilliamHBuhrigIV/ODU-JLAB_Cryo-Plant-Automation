@@ -1,7 +1,7 @@
-mod data_loader;
-use data_loader::CSV as CSV;
+use data_structures::{*, file_csv::CSV as CSV};
+mod data_structures;
 fn main() {
     let test_csv = CSV::new("./src/test.csv");
-    let data: Vec<Vec<f64>> = test_csv.load_csv_data();
+    let data: PointCloud<PointVector<DataPoint>> = CSV::load_self(&test_csv).unwrap();
     println!("{:#?}",data);
 }

@@ -3,19 +3,28 @@ use std::io::BufReader;
 use std::io::prelude::*;
 use std::str;
 use std::fs::File;
+use super::*;
+
+#[derive(Debug)]
+#[allow(dead_code)]
 pub struct CSV {
     file_path: &'static str,
+    data: Option<PointCloud<PointVector<DataPoint>>>
 }
 // Assumes Standard RFC 4180
 // Removes Header Data
 impl CSV {
-    pub fn new(file_path: &'static str) -> Self { Self { file_path }}
-    pub fn load_csv_data(&self) -> Vec<Vec<f64>> {
-        let file = match File::open(self.file_path) {
+    pub fn new(file_path: &'static str) -> Self { Self {
+        file_path,
+        data: Some(self::CSV::load(file_path))
+    }}
+    pub fn load_self(&self) -> Option<PointCloud<PointVector<DataPoint>>> { Some(self::CSV::load(self.file_path)) }
+    pub fn load(file_path: &str) -> PointCloud<PointVector<DataPoint>> {
+        let file = match File::open(file_path) {
             Ok(file) => file,
             Err(e) => match e.kind() {
-                ErrorKind::NotFound => { panic!("Can't Find File: {e:?}") },
-                e => { panic!("Can't Open File: {e:?}") }
+                ErrorKind::NotFound => { panic!("Can't Find File: {e:#?}") },
+                e => { panic!("Can't Open File: {e:#?}") }
             }
         };
         let mut buffer_data = BufReader::new(file);
@@ -23,7 +32,7 @@ impl CSV {
         match buffer_data.read_to_string(&mut data) {
             Ok(value) => value,
             Err(e) => match e.kind() {
-                e => { panic!("Failed to Write Buffer Data: {e:?}") }
+                e => { panic!("Failed to Write Buffer Data: {e:#?}") }
             }
         };
         let data: Vec<u8> = data.as_bytes().to_vec();
@@ -31,7 +40,7 @@ impl CSV {
         for &item in data.iter() {
             match item {
                 b',' => column_number += 1,
-                b'\r' => break,
+                b'\n' => break,
                 _ => continue
             }
         }
@@ -42,7 +51,7 @@ impl CSV {
                 buffer_data.push(str::from_utf8(&data[cell_start..]).unwrap());
                 break;
             }
-            if (b',' == item) || (b'\r' == item) {
+            if (b',' == item) || (b'\n' == item) {
                 buffer_data.push(str::from_utf8(&data[cell_start..i]).unwrap());
                 cell_start = i + 1;
                 if item == b'\r' {
@@ -50,9 +59,9 @@ impl CSV {
                 }
             }
         }
-        let mut data: Vec<Vec<f64>> = Vec::new();
+        let mut data: PointCloud<PointVector<DataPoint>> = PointCloud::new();
         for _i in 0..column_number {
-            data.push(Vec::new());
+            data.push(PointVector::new());
         }
         let mut line_one_header = false;
         for &item in buffer_data[..column_number].iter() { match item.parse::<f64>() {
@@ -67,13 +76,13 @@ impl CSV {
                 continue;
             }
             match i % column_number {
-                value => data[value].push(match item.parse::<f64>() {
+                value => data[value].push( DataPoint::new( match item.parse::<f64>() {
                     Ok(value) => value,
                     Err(e) => {
                         if i < column_number { continue }
-                        panic!("Non Float in Data: {e:?}\nLine: {} Column: {}",i/column_number, i%column_number)
+                        panic!("Non Float in Data: {e:#?}\nLine: {} Column: {}",i/column_number, i%column_number+1)
                     }
-                })
+                }))
             }
         }
         data

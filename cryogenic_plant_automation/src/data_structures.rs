@@ -1,0 +1,370 @@
+use std::{collections::TryReserveError, mem::MaybeUninit, ops::{self, RangeBounds}, slice::SliceIndex, vec::Drain};
+use core::fmt;
+pub mod file_csv;
+
+////////////////////////////////////////////////////////////////////////////////
+// Struct Declarations
+////////////////////////////////////////////////////////////////////////////////
+
+#[allow(dead_code)]
+pub struct DataPoint{
+    value: f64
+}
+
+#[allow(dead_code)]
+pub struct PointVector<DataPoint>{
+    buf: Vec<DataPoint>
+}
+
+#[allow(dead_code)]
+pub struct PointCloud<PointVector>{
+    buf: Vec<PointVector>
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Inherent methods for DataPoint
+////////////////////////////////////////////////////////////////////////////////
+
+#[allow(dead_code)]
+impl DataPoint {
+    #[inline]
+    #[must_use]
+    pub const fn new(value: f64) -> Self { DataPoint { value } }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Inherent methods for PointVector
+////////////////////////////////////////////////////////////////////////////////
+
+#[allow(dead_code)]
+impl<DataPoint> PointVector<DataPoint> {
+    #[inline]
+    #[must_use]
+    pub const fn new() -> Self { PointVector { buf: Vec::new() } }
+    #[inline]
+    pub fn with_capacity(capacity: usize) -> Self { PointVector { 
+        buf: Vec::with_capacity(capacity) 
+    }}
+    pub fn reserve(&mut self, additional: usize) {
+        self.buf.reserve(additional);
+    }
+    pub fn reserve_exact(&mut self, additional: usize) {
+        self.buf.reserve_exact(additional);
+    }
+    pub fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.buf.try_reserve(additional)
+    }
+    pub fn try_reserve_exact(&mut self, additional: usize) -> Result<(),TryReserveError> {
+        self.buf.try_reserve_exact(additional)
+    }
+    #[inline]
+    pub fn shrink_to_fit(&mut self) {
+        self.buf.shrink_to_fit();
+    }
+    pub fn shrink_to(&mut self, min_capacity: usize) {
+        self.buf.shrink_to(min_capacity);
+    }
+    // Didn't Include Allocator
+    pub fn into_boxed_slice(self) -> Box<[DataPoint]> { 
+        self.buf.into_boxed_slice()
+    }
+    pub fn truncate(&mut self, len: usize) {
+        self.buf.truncate(len);
+    }
+    #[inline]
+    pub fn as_slice(&self) -> &[DataPoint] {
+        self.buf.as_slice()
+    }
+    #[inline]
+    pub fn as_mut_slice(&mut self) -> &mut [DataPoint] {
+        self.buf.as_mut_slice()
+    }
+    #[inline]
+    pub fn swap_remove(&mut self, index: usize) -> DataPoint {
+        self.buf.swap_remove(index)
+    }
+    pub fn insert(&mut self, index: usize, element: DataPoint) {
+        self.buf.insert(index, element);
+    }
+    pub fn remove(&mut self, index: usize) -> DataPoint {
+        self.buf.remove(index)
+    }
+    pub fn retain<F>(&mut self, f: F) where F: FnMut(&DataPoint) -> bool, {
+        self.buf.retain(f);
+    }
+    pub fn retain_mut<F>(&mut self, f: F) where F: FnMut(&mut DataPoint) -> bool, {
+        self.buf.retain_mut(f);
+    }
+    pub fn dedup_by_key<F, K>(&mut self, key: F) where F: FnMut(&mut DataPoint) -> K, K: PartialEq, {
+        self.buf.dedup_by_key(key);
+    }
+    pub fn dedup_by<F>(&mut self, same_bucket: F) 
+    where 
+        F: FnMut(&mut DataPoint, &mut DataPoint) -> bool, 
+    {
+        self.buf.dedup_by(same_bucket);
+    }
+    #[inline]
+    pub fn push(&mut self, value: DataPoint) {
+        self.buf.push(value);
+    }
+    #[inline]
+    pub fn pop(&mut self) -> Option<DataPoint> {
+        self.buf.pop()
+    }
+    pub fn append(&mut self, other: &mut Self) {
+        self.buf.append(&mut other.buf);
+    }
+    pub fn drain<R>(&mut self, range: R) -> Drain<'_, DataPoint> where R: RangeBounds<usize>, {
+        self.buf.drain(range)
+    }
+    pub fn clear(&mut self) {
+        self.buf.clear();
+    }
+    // Didn't Include Allocator
+    /*pub fn split_off(&mut self, at: usize) -> Self where A: Clone, {
+        self.buf.split_off(at)
+    }*/
+    pub fn resize_with<F>(&mut self, new_len: usize, f: F) where F: FnMut() -> DataPoint, {
+        self.buf.resize_with(new_len, f)
+    }
+    // Didn't Include Allocator
+    /*#[inline]
+    pub fn leak<'a>(self) -> &'a mut [DataPoint] where A: 'a, {
+        self.buf.leak()
+    }*/
+    #[inline]
+    pub fn spare_capacity_mut(&mut self) -> &mut [MaybeUninit<DataPoint>] {
+        self.buf.spare_capacity_mut()
+    }
+    // Too Much Effort 
+    /*pub fn resize(&mut self, new_len: usize, value: DataPoint) {
+        let len = self.buf.len();
+        if new_len > len {
+            self.extend_with(new_len-len, value);
+        } else {
+            self.truncate(new_len);
+        }
+    }*/
+    // Too Much Effort
+    /*pub fn extend_from_slice(&mut self, other: &[DataPoint]) {
+        self.spec_extend(other.iter())
+    }*/
+    // Use of Unstable Library Feature
+    /*pub fn extend_from_within<R>(&mut self, src: R) where R: RangeBounds<usize>, {
+        let range = slice::range(src,..self.buf.len());
+        self.buf.reserve(range.len());
+    }*/
+    // No public Vec<T>.into_flattened()
+    /*pub fn into_flattened(self) -> Vec<DataPoint> {
+        self.buf.into_flatten()
+    }*/
+    // Splice is Private?
+    /*#[inline]
+    pub fn splice<R, I>(&mut self, range: R, replace_with: I) -> Splice<'_, I::IntoIter>
+        where R: RangeBounds<usize>, I: IntoIterator<Item = DataPoint>, {
+            Splice { drain: self.drain(range), replace_with: replace_with.into_iter() }
+    }*/
+}
+#[allow(dead_code)]
+impl<DataPoint: PartialEq> PointVector<DataPoint> {
+    #[inline]
+    pub fn dedup(&mut self) {
+        self.dedup_by(|a,b| a == b)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Inherent methods for PointCloud
+////////////////////////////////////////////////////////////////////////////////
+
+#[allow(dead_code)]
+impl<PointVector> PointCloud<PointVector> {
+    #[inline]
+    #[must_use]
+    pub const fn new() -> Self { PointCloud { buf: Vec::new() } }
+    #[inline]
+    pub fn with_capacity(capacity: usize) -> Self { PointCloud { 
+        buf: Vec::with_capacity(capacity) 
+    }}
+    pub fn reserve(&mut self, additional: usize) {
+        self.buf.reserve(additional);
+    }
+    pub fn reserve_exact(&mut self, additional: usize) {
+        self.buf.reserve_exact(additional);
+    }
+    pub fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.buf.try_reserve(additional)
+    }
+    pub fn try_reserve_exact(&mut self, additional: usize) -> Result<(),TryReserveError> {
+        self.buf.try_reserve_exact(additional)
+    }
+    #[inline]
+    pub fn shrink_to_fit(&mut self) {
+        self.buf.shrink_to_fit();
+    }
+    pub fn shrink_to(&mut self, min_capacity: usize) {
+        self.buf.shrink_to(min_capacity);
+    }
+    // Didn't Include Allocator
+    pub fn into_boxed_slice(self) -> Box<[PointVector]> { 
+        self.buf.into_boxed_slice()
+    }
+    pub fn truncate(&mut self, len: usize) {
+        self.buf.truncate(len);
+    }
+    #[inline]
+    pub fn as_slice(&self) -> &[PointVector] {
+        self.buf.as_slice()
+    }
+    #[inline]
+    pub fn as_mut_slice(&mut self) -> &mut [PointVector] {
+        self.buf.as_mut_slice()
+    }
+    #[inline]
+    pub fn swap_remove(&mut self, index: usize) -> PointVector {
+        self.buf.swap_remove(index)
+    }
+    pub fn insert(&mut self, index: usize, element: PointVector) {
+        self.buf.insert(index, element);
+    }
+    pub fn remove(&mut self, index: usize) -> PointVector {
+        self.buf.remove(index)
+    }
+    pub fn retain<F>(&mut self, f: F) where F: FnMut(&PointVector) -> bool, {
+        self.buf.retain(f);
+    }
+    pub fn retain_mut<F>(&mut self, f: F) where F: FnMut(&mut PointVector) -> bool, {
+        self.buf.retain_mut(f);
+    }
+    pub fn dedup_by_key<F, K>(&mut self, key: F) where F: FnMut(&mut PointVector) -> K, K: PartialEq, {
+        self.buf.dedup_by_key(key);
+    }
+    pub fn dedup_by<F>(&mut self, same_bucket: F) 
+    where 
+        F: FnMut(&mut PointVector, &mut PointVector) -> bool, 
+    {
+        self.buf.dedup_by(same_bucket);
+    }
+    #[inline]
+    pub fn push(&mut self, value: PointVector) {
+        self.buf.push(value);
+    }
+    #[inline]
+    pub fn pop(&mut self) -> Option<PointVector> {
+        self.buf.pop()
+    }
+    pub fn append(&mut self, other: &mut Self) {
+        self.buf.append(&mut other.buf);
+    }
+    pub fn drain<R>(&mut self, range: R) -> Drain<'_, PointVector> where R: RangeBounds<usize>, {
+        self.buf.drain(range)
+    }
+    pub fn clear(&mut self) {
+        self.buf.clear();
+    }
+    pub fn resize_with<F>(&mut self, new_len: usize, f: F) where F: FnMut() -> PointVector, {
+        self.buf.resize_with(new_len, f)
+    }
+    #[inline]
+    pub fn spare_capacity_mut(&mut self) -> &mut [MaybeUninit<PointVector>] {
+        self.buf.spare_capacity_mut()
+    }
+}
+#[allow(dead_code)]
+impl<PointVector: PartialEq> PointCloud<PointVector> {
+    #[inline]
+    pub fn dedup(&mut self) {
+        self.dedup_by(|a,b| a == b)
+    }
+}
+#[allow(dead_code)]
+impl<PointVector, I: SliceIndex<[PointVector]>> core::ops::Index<I> for PointCloud<PointVector> {
+    type Output = I::Output;
+    #[inline]
+    fn index(&self, index: I) -> &Self::Output {
+        core::ops::Index::index(&**self, index)
+    }
+}
+#[allow(dead_code)]
+impl<PointVector, I: SliceIndex<[PointVector]>> core::ops::IndexMut<I> for PointCloud<PointVector> {
+    #[inline]
+    fn index_mut(&mut self, index: I) -> &mut Self::Output {
+        core::ops::IndexMut::index_mut(&mut **self, index)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Common trait implementations for DataPoint
+////////////////////////////////////////////////////////////////////////////////
+
+impl ops::Deref for DataPoint {
+    type Target = DataPoint;
+    #[inline]
+    fn deref(&self) -> &DataPoint {
+        self
+    }
+}
+impl fmt::Debug for DataPoint {
+    fn fmt(&self, format: &mut fmt::Formatter<'_>) -> fmt::Result {
+        format.debug_tuple("DataPoint")
+         .field(&self.value)
+         .finish()
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Common trait implementations for PointVector
+////////////////////////////////////////////////////////////////////////////////
+
+#[allow(dead_code)]
+impl<DataPoint> ops::Deref for PointVector<DataPoint> {
+    type Target = [DataPoint];
+    #[inline]
+    fn deref(&self) -> &[DataPoint] {
+        self.as_slice()
+    }
+}
+#[allow(dead_code)]
+impl<DataPoint> ops::DerefMut for PointVector<DataPoint> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut [DataPoint] {
+        self.as_mut_slice()
+    }
+}
+impl<DataPoint: fmt::Debug> fmt::Debug for PointVector<DataPoint> {
+    fn fmt(&self, format: &mut fmt::Formatter<'_>) -> fmt::Result {
+        //fmt::Debug::fmt(&**self, f)
+        format.debug_list()
+            .entries(self.buf.iter())
+            .finish()
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Common trait implementations for PointCloud
+////////////////////////////////////////////////////////////////////////////////
+
+#[allow(dead_code)]
+impl<PointVector> ops::Deref for PointCloud<PointVector> {
+    type Target = [PointVector];
+    #[inline]
+    fn deref(&self) -> &[PointVector] {
+        self.as_slice()
+    }
+}
+#[allow(dead_code)]
+impl<PointVector> ops::DerefMut for PointCloud<PointVector> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut [PointVector] {
+        self.as_mut_slice()
+    }
+}
+impl<PointVector: fmt::Debug> fmt::Debug for PointCloud<PointVector> {
+    fn fmt(&self, format: &mut fmt::Formatter<'_>) -> fmt::Result {
+        //fmt::Debug::fmt(&**self, f)
+        format.debug_list()
+            .entries(self.buf.iter())
+            .finish()
+    }
+}
