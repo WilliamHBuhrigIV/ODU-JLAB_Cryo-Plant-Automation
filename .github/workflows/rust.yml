@@ -16,7 +16,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build
+    - name: Verbose Build
       run: cd ./cryogenic_plant_automation/ && cargo build --verbose && cd ..
-    - name: Run tests
+    - name: Verbose Tests
       run: cd ./cryogenic_plant_automation/ && cargo test --verbose && cd ..
+    - name: Verbose Run
+      run: cd ./cryogenic_plant_automation/ && cargo run --verbose && cd ..
