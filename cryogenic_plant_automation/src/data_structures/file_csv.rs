@@ -13,6 +13,7 @@ pub struct CSV {
 }
 // Assumes Standard RFC 4180
 // Removes Header Data
+#[allow(dead_code)]
 impl CSV {
     pub fn new(file_path: &'static str) -> Self { Self {
         file_path,

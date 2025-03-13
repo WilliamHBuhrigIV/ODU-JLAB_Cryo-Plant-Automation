@@ -298,6 +298,7 @@ impl<PointVector, I: SliceIndex<[PointVector]>> core::ops::IndexMut<I> for Point
 // Common trait implementations for PointData
 ////////////////////////////////////////////////////////////////////////////////
 
+#[allow(dead_code)]
 impl ops::Deref for PointData {
     type Target = PointData;
     #[inline]
