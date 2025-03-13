@@ -9,7 +9,7 @@ use super::*;
 #[allow(dead_code)]
 pub struct CSV {
     file_path: &'static str,
-    data: Option<PointCloud<PointVector<PointData>>>
+    data: Option<PointCloud>
 }
 // Assumes Standard RFC 4180
 // Removes Header Data
@@ -19,8 +19,8 @@ impl CSV {
         file_path,
         data: Some(self::CSV::load(file_path))
     }}
-    pub fn load_self(&self) -> Option<PointCloud<PointVector<PointData>>> { Some(self::CSV::load(self.file_path)) }
-    pub fn load(file_path: &str) -> PointCloud<PointVector<PointData>> {
+    pub fn load_self(&self) -> Option<PointCloud> { Some(self::CSV::load(self.file_path)) }
+    pub fn load(file_path: &str) -> PointCloud {
         let file = match File::open(file_path) {
             Ok(file) => file,
             Err(e) => match e.kind() {
@@ -61,7 +61,7 @@ impl CSV {
                 cell_start = i + 1;
             }
         }
-        let mut data: PointCloud<PointVector<PointData>> = PointCloud::new();
+        let mut data: PointCloud = PointCloud::new();
         for _i in 0..column_number {
             data.push(PointVector::new());
         }

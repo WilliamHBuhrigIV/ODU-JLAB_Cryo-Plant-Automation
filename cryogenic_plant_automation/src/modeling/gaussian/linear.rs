@@ -1,17 +1,22 @@
+use crate::data_structures::PointCloud;
+
 #[derive(Debug)]
-pub enum LocalParams {
+pub enum LinearParams {
     None
 }
 
 #[derive(Debug)]
 pub struct Linear {
     #[allow(dead_code)]
-    local_params: Option<Vec<LocalParams>>
+    local_params: Vec<LinearParams>,
 }
 
 impl Linear {
     #[inline]
-    pub const fn new(local_params: Option<Vec<LocalParams>>) -> Self { Self { local_params }}
+    pub const fn new(local_params: Vec<LinearParams>) -> Self { Self { local_params }}
     #[inline]
-    pub fn compute(&self) { println!("Got to Linear!") }
+    pub fn compute(&self, input_data: PointCloud) -> PointCloud {
+        let dat = input_data.clone();
+        dat
+    }
 }

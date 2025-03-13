@@ -5,19 +5,19 @@ pub mod file_csv;
 ////////////////////////////////////////////////////////////////////////////////
 // Struct Declarations
 ////////////////////////////////////////////////////////////////////////////////
-
+#[derive(Copy, Clone)]
 #[allow(dead_code)]
 pub struct PointData{
     value: f64
 }
-
+#[derive(Clone)]
 #[allow(dead_code)]
-pub struct PointVector<PointData>{
+pub struct PointVector{
     buf: Vec<PointData>
 }
-
+#[derive(Clone)]
 #[allow(dead_code)]
-pub struct PointCloud<PointVector>{
+pub struct PointCloud{
     buf: Vec<PointVector>
 }
 
@@ -30,6 +30,7 @@ impl PointData {
     #[inline]
     #[must_use]
     pub const fn new(value: f64) -> Self { PointData { value } }
+    pub fn get(&self) -> f64 { self.value }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +38,7 @@ impl PointData {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[allow(dead_code)]
-impl<PointData> PointVector<PointData> {
+impl PointVector {
     #[inline]
     #[must_use]
     pub const fn new() -> Self { PointVector { buf: Vec::new() } }
@@ -166,20 +167,20 @@ impl<PointData> PointVector<PointData> {
             Splice { drain: self.drain(range), replace_with: replace_with.into_iter() }
     }*/
 }
-#[allow(dead_code)]
-impl<PointData: PartialEq> PointVector<PointData> {
+/*#[allow(dead_code)]
+impl PointVector {
     #[inline]
     pub fn dedup(&mut self) {
         self.dedup_by(|a,b| a == b)
     }
-}
+}*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inherent methods for PointCloud
 ////////////////////////////////////////////////////////////////////////////////
 
 #[allow(dead_code)]
-impl<PointVector> PointCloud<PointVector> {
+impl PointCloud {
     #[inline]
     #[must_use]
     pub const fn new() -> Self { PointCloud { buf: Vec::new() } }
@@ -272,14 +273,14 @@ impl<PointVector> PointCloud<PointVector> {
     }
 }
 #[allow(dead_code)]
-impl<PointVector: PartialEq> PointCloud<PointVector> {
+/*impl PointCloud {
     #[inline]
     pub fn dedup(&mut self) {
         self.dedup_by(|a,b| a == b)
     }
-}
+}*/
 #[allow(dead_code)]
-impl<PointVector, I: SliceIndex<[PointVector]>> core::ops::Index<I> for PointCloud<PointVector> {
+impl<I: SliceIndex<[PointVector]>> core::ops::Index<I> for PointCloud {
     type Output = I::Output;
     #[inline]
     fn index(&self, index: I) -> &Self::Output {
@@ -287,7 +288,7 @@ impl<PointVector, I: SliceIndex<[PointVector]>> core::ops::Index<I> for PointClo
     }
 }
 #[allow(dead_code)]
-impl<PointVector, I: SliceIndex<[PointVector]>> core::ops::IndexMut<I> for PointCloud<PointVector> {
+impl<I: SliceIndex<[PointVector]>> core::ops::IndexMut<I> for PointCloud {
     #[inline]
     fn index_mut(&mut self, index: I) -> &mut Self::Output {
         core::ops::IndexMut::index_mut(&mut **self, index)
@@ -300,15 +301,15 @@ impl<PointVector, I: SliceIndex<[PointVector]>> core::ops::IndexMut<I> for Point
 
 #[allow(dead_code)]
 impl ops::Deref for PointData {
-    type Target = PointData;
+    type Target = f64;
     #[inline]
-    fn deref(&self) -> &PointData {
-        self
+    fn deref(&self) -> &f64 {
+        &self.value
     }
 }
 impl fmt::Debug for PointData {
     fn fmt(&self, format: &mut fmt::Formatter<'_>) -> fmt::Result {
-        format.debug_tuple("PointData")
+        format.debug_tuple(" ")
          .field(&self.value)
          .finish()
     }
@@ -319,7 +320,7 @@ impl fmt::Debug for PointData {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[allow(dead_code)]
-impl<PointData> ops::Deref for PointVector<PointData> {
+impl ops::Deref for PointVector {
     type Target = [PointData];
     #[inline]
     fn deref(&self) -> &[PointData] {
@@ -327,13 +328,13 @@ impl<PointData> ops::Deref for PointVector<PointData> {
     }
 }
 #[allow(dead_code)]
-impl<PointData> ops::DerefMut for PointVector<PointData> {
+impl ops::DerefMut for PointVector {
     #[inline]
     fn deref_mut(&mut self) -> &mut [PointData] {
         self.as_mut_slice()
     }
 }
-impl<PointData: fmt::Debug> fmt::Debug for PointVector<PointData> {
+impl fmt::Debug for PointVector {
     fn fmt(&self, format: &mut fmt::Formatter<'_>) -> fmt::Result {
         //fmt::Debug::fmt(&**self, f)
         format.debug_list()
@@ -347,7 +348,7 @@ impl<PointData: fmt::Debug> fmt::Debug for PointVector<PointData> {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[allow(dead_code)]
-impl<PointVector> ops::Deref for PointCloud<PointVector> {
+impl ops::Deref for PointCloud {
     type Target = [PointVector];
     #[inline]
     fn deref(&self) -> &[PointVector] {
@@ -355,13 +356,13 @@ impl<PointVector> ops::Deref for PointCloud<PointVector> {
     }
 }
 #[allow(dead_code)]
-impl<PointVector> ops::DerefMut for PointCloud<PointVector> {
+impl ops::DerefMut for PointCloud {
     #[inline]
     fn deref_mut(&mut self) -> &mut [PointVector] {
         self.as_mut_slice()
     }
 }
-impl<PointVector: fmt::Debug> fmt::Debug for PointCloud<PointVector> {
+impl fmt::Debug for PointCloud {
     fn fmt(&self, format: &mut fmt::Formatter<'_>) -> fmt::Result {
         //fmt::Debug::fmt(&**self, f)
         format.debug_list()
