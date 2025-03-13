@@ -7,13 +7,13 @@ pub mod file_csv;
 ////////////////////////////////////////////////////////////////////////////////
 
 #[allow(dead_code)]
-pub struct DataPoint{
+pub struct PointData{
     value: f64
 }
 
 #[allow(dead_code)]
-pub struct PointVector<DataPoint>{
-    buf: Vec<DataPoint>
+pub struct PointVector<PointData>{
+    buf: Vec<PointData>
 }
 
 #[allow(dead_code)]
@@ -22,14 +22,14 @@ pub struct PointCloud<PointVector>{
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Inherent methods for DataPoint
+// Inherent methods for PointData
 ////////////////////////////////////////////////////////////////////////////////
 
 #[allow(dead_code)]
-impl DataPoint {
+impl PointData {
     #[inline]
     #[must_use]
-    pub const fn new(value: f64) -> Self { DataPoint { value } }
+    pub const fn new(value: f64) -> Self { PointData { value } }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ impl DataPoint {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[allow(dead_code)]
-impl<DataPoint> PointVector<DataPoint> {
+impl<PointData> PointVector<PointData> {
     #[inline]
     #[must_use]
     pub const fn new() -> Self { PointVector { buf: Vec::new() } }
@@ -65,57 +65,57 @@ impl<DataPoint> PointVector<DataPoint> {
         self.buf.shrink_to(min_capacity);
     }
     // Didn't Include Allocator
-    pub fn into_boxed_slice(self) -> Box<[DataPoint]> { 
+    pub fn into_boxed_slice(self) -> Box<[PointData]> { 
         self.buf.into_boxed_slice()
     }
     pub fn truncate(&mut self, len: usize) {
         self.buf.truncate(len);
     }
     #[inline]
-    pub fn as_slice(&self) -> &[DataPoint] {
+    pub fn as_slice(&self) -> &[PointData] {
         self.buf.as_slice()
     }
     #[inline]
-    pub fn as_mut_slice(&mut self) -> &mut [DataPoint] {
+    pub fn as_mut_slice(&mut self) -> &mut [PointData] {
         self.buf.as_mut_slice()
     }
     #[inline]
-    pub fn swap_remove(&mut self, index: usize) -> DataPoint {
+    pub fn swap_remove(&mut self, index: usize) -> PointData {
         self.buf.swap_remove(index)
     }
-    pub fn insert(&mut self, index: usize, element: DataPoint) {
+    pub fn insert(&mut self, index: usize, element: PointData) {
         self.buf.insert(index, element);
     }
-    pub fn remove(&mut self, index: usize) -> DataPoint {
+    pub fn remove(&mut self, index: usize) -> PointData {
         self.buf.remove(index)
     }
-    pub fn retain<F>(&mut self, f: F) where F: FnMut(&DataPoint) -> bool, {
+    pub fn retain<F>(&mut self, f: F) where F: FnMut(&PointData) -> bool, {
         self.buf.retain(f);
     }
-    pub fn retain_mut<F>(&mut self, f: F) where F: FnMut(&mut DataPoint) -> bool, {
+    pub fn retain_mut<F>(&mut self, f: F) where F: FnMut(&mut PointData) -> bool, {
         self.buf.retain_mut(f);
     }
-    pub fn dedup_by_key<F, K>(&mut self, key: F) where F: FnMut(&mut DataPoint) -> K, K: PartialEq, {
+    pub fn dedup_by_key<F, K>(&mut self, key: F) where F: FnMut(&mut PointData) -> K, K: PartialEq, {
         self.buf.dedup_by_key(key);
     }
     pub fn dedup_by<F>(&mut self, same_bucket: F) 
     where 
-        F: FnMut(&mut DataPoint, &mut DataPoint) -> bool, 
+        F: FnMut(&mut PointData, &mut PointData) -> bool, 
     {
         self.buf.dedup_by(same_bucket);
     }
     #[inline]
-    pub fn push(&mut self, value: DataPoint) {
+    pub fn push(&mut self, value: PointData) {
         self.buf.push(value);
     }
     #[inline]
-    pub fn pop(&mut self) -> Option<DataPoint> {
+    pub fn pop(&mut self) -> Option<PointData> {
         self.buf.pop()
     }
     pub fn append(&mut self, other: &mut Self) {
         self.buf.append(&mut other.buf);
     }
-    pub fn drain<R>(&mut self, range: R) -> Drain<'_, DataPoint> where R: RangeBounds<usize>, {
+    pub fn drain<R>(&mut self, range: R) -> Drain<'_, PointData> where R: RangeBounds<usize>, {
         self.buf.drain(range)
     }
     pub fn clear(&mut self) {
@@ -125,20 +125,20 @@ impl<DataPoint> PointVector<DataPoint> {
     /*pub fn split_off(&mut self, at: usize) -> Self where A: Clone, {
         self.buf.split_off(at)
     }*/
-    pub fn resize_with<F>(&mut self, new_len: usize, f: F) where F: FnMut() -> DataPoint, {
+    pub fn resize_with<F>(&mut self, new_len: usize, f: F) where F: FnMut() -> PointData, {
         self.buf.resize_with(new_len, f)
     }
     // Didn't Include Allocator
     /*#[inline]
-    pub fn leak<'a>(self) -> &'a mut [DataPoint] where A: 'a, {
+    pub fn leak<'a>(self) -> &'a mut [PointData] where A: 'a, {
         self.buf.leak()
     }*/
     #[inline]
-    pub fn spare_capacity_mut(&mut self) -> &mut [MaybeUninit<DataPoint>] {
+    pub fn spare_capacity_mut(&mut self) -> &mut [MaybeUninit<PointData>] {
         self.buf.spare_capacity_mut()
     }
     // Too Much Effort 
-    /*pub fn resize(&mut self, new_len: usize, value: DataPoint) {
+    /*pub fn resize(&mut self, new_len: usize, value: PointData) {
         let len = self.buf.len();
         if new_len > len {
             self.extend_with(new_len-len, value);
@@ -147,7 +147,7 @@ impl<DataPoint> PointVector<DataPoint> {
         }
     }*/
     // Too Much Effort
-    /*pub fn extend_from_slice(&mut self, other: &[DataPoint]) {
+    /*pub fn extend_from_slice(&mut self, other: &[PointData]) {
         self.spec_extend(other.iter())
     }*/
     // Use of Unstable Library Feature
@@ -156,18 +156,18 @@ impl<DataPoint> PointVector<DataPoint> {
         self.buf.reserve(range.len());
     }*/
     // No public Vec<T>.into_flattened()
-    /*pub fn into_flattened(self) -> Vec<DataPoint> {
+    /*pub fn into_flattened(self) -> Vec<PointData> {
         self.buf.into_flatten()
     }*/
     // Splice is Private?
     /*#[inline]
     pub fn splice<R, I>(&mut self, range: R, replace_with: I) -> Splice<'_, I::IntoIter>
-        where R: RangeBounds<usize>, I: IntoIterator<Item = DataPoint>, {
+        where R: RangeBounds<usize>, I: IntoIterator<Item = PointData>, {
             Splice { drain: self.drain(range), replace_with: replace_with.into_iter() }
     }*/
 }
 #[allow(dead_code)]
-impl<DataPoint: PartialEq> PointVector<DataPoint> {
+impl<PointData: PartialEq> PointVector<PointData> {
     #[inline]
     pub fn dedup(&mut self) {
         self.dedup_by(|a,b| a == b)
@@ -295,19 +295,19 @@ impl<PointVector, I: SliceIndex<[PointVector]>> core::ops::IndexMut<I> for Point
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Common trait implementations for DataPoint
+// Common trait implementations for PointData
 ////////////////////////////////////////////////////////////////////////////////
 
-impl ops::Deref for DataPoint {
-    type Target = DataPoint;
+impl ops::Deref for PointData {
+    type Target = PointData;
     #[inline]
-    fn deref(&self) -> &DataPoint {
+    fn deref(&self) -> &PointData {
         self
     }
 }
-impl fmt::Debug for DataPoint {
+impl fmt::Debug for PointData {
     fn fmt(&self, format: &mut fmt::Formatter<'_>) -> fmt::Result {
-        format.debug_tuple("DataPoint")
+        format.debug_tuple("PointData")
          .field(&self.value)
          .finish()
     }
@@ -318,21 +318,21 @@ impl fmt::Debug for DataPoint {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[allow(dead_code)]
-impl<DataPoint> ops::Deref for PointVector<DataPoint> {
-    type Target = [DataPoint];
+impl<PointData> ops::Deref for PointVector<PointData> {
+    type Target = [PointData];
     #[inline]
-    fn deref(&self) -> &[DataPoint] {
+    fn deref(&self) -> &[PointData] {
         self.as_slice()
     }
 }
 #[allow(dead_code)]
-impl<DataPoint> ops::DerefMut for PointVector<DataPoint> {
+impl<PointData> ops::DerefMut for PointVector<PointData> {
     #[inline]
-    fn deref_mut(&mut self) -> &mut [DataPoint] {
+    fn deref_mut(&mut self) -> &mut [PointData] {
         self.as_mut_slice()
     }
 }
-impl<DataPoint: fmt::Debug> fmt::Debug for PointVector<DataPoint> {
+impl<PointData: fmt::Debug> fmt::Debug for PointVector<PointData> {
     fn fmt(&self, format: &mut fmt::Formatter<'_>) -> fmt::Result {
         //fmt::Debug::fmt(&**self, f)
         format.debug_list()
