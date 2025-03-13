@@ -1,7 +1,5 @@
-
-#[allow(unused_imports)]
 use {
-    core::option::Option::{self, Some},
+    core::option::Option::*,
     data_structures::{*, file_csv::*},
     modeling::{*,gaussian::{*, linear::*}}
 };
@@ -25,5 +23,7 @@ fn main() {
         Plant::new(ModelKind::Gaussian(
             Gaussian::new(ComplexityKind::Linear(
                 Linear::new(linear_params)),gaussian_params)),plant_params);
-    println!("{:?}",linear_gaussian_plant)
+    linear_gaussian_plant.compute();
+    println!("{:?}",&linear_gaussian_plant)
+
 }
