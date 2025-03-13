@@ -52,11 +52,12 @@ impl CSV {
                 break;
             }
             if (b',' == item) || (b'\n' == item) {
-                buffer_data.push(str::from_utf8(&data[cell_start..i]).unwrap());
-                cell_start = i + 1;
-                if item == b'\r' {
-                    cell_start += 1;
+                if (b'\n' == item) && (b'\r' == data[i-1]) {
+                    buffer_data.push(str::from_utf8(&data[cell_start..i-1]).unwrap());
+                }else {
+                    buffer_data.push(str::from_utf8(&data[cell_start..i]).unwrap());
                 }
+                cell_start = i + 1;
             }
         }
         let mut data: PointCloud<PointVector<DataPoint>> = PointCloud::new();
