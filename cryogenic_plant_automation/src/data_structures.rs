@@ -1,6 +1,7 @@
 use std::{collections::TryReserveError, mem::MaybeUninit, ops::{self, RangeBounds}, slice::SliceIndex, vec::Drain};
 use core::fmt;
 pub mod file_csv;
+pub mod interface_sqlite;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Struct Declarations
