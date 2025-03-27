@@ -1,6 +1,6 @@
 use sqlx::{migrate::MigrateDatabase, sqlite::SqliteQueryResult, Pool, Sqlite, SqlitePool};
 
-use super::{common_enums::*, heat_exchanger::{self, *}};
+use super::{common_enums::*, heat_exchanger::*};
 
 #[allow(dead_code)]
 #[allow(non_camel_case_types)]

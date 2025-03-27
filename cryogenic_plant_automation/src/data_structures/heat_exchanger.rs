@@ -11,6 +11,7 @@ pub struct Stream {
     temperature_output: Temperature
 }
 
+#[allow(dead_code)]
 pub struct HeatExchanger {
     name: String,
     stream_number: u64,

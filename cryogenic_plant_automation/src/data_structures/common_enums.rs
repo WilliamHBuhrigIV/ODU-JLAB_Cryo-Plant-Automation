@@ -26,11 +26,13 @@ pub enum Massflow {
 // Materials Enum Declarations
 ////////////////////////////////////////////////////////////////////////////////
 
+#[allow(dead_code)]
 pub enum Fluid {
     Helium,
     Nitrogen
 }
 
+#[allow(dead_code)]
 pub enum Phase {
     Liquid,
     Gas,
