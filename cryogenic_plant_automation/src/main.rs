@@ -10,7 +10,7 @@ async fn main() {
 
     // Effectivily Isn't Doing Anything Past Here 
     // Prevents Warnings from happening if being used.
-    let test_csv = CSV::new("./src/test.csv");
+    let test_csv = CSV::new("./data/test.csv");
     let mut data: PointCloud = CSV::load_self(&test_csv).unwrap();
     let x1: PointVector = data.pop().unwrap();
     let y1: PointVector = data.pop().unwrap();

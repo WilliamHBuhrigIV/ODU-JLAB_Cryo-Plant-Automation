@@ -1,32 +1,35 @@
 use sqlx::{migrate::MigrateDatabase, sqlite::SqliteQueryResult, Pool, Sqlite, SqlitePool};
 
+use super::{common_enums::*, heat_exchanger::{self, *}};
+
+#[allow(dead_code)]
 #[allow(non_camel_case_types)]
 pub struct interface_SQLite {
-    db_uri: &'static str,
+    db_uri: String,
     pool: Pool<Sqlite>
 }
 
 #[allow(dead_code)]
 impl interface_SQLite {
-    pub async fn new(db_uri: &'static str) -> Self { Self {
-        db_uri,
+    pub async fn new(db_uri: String, component_type: Component<'_>) -> Self { Self {
+        db_uri: db_uri.clone(),
         pool: {
-            if !Sqlite::database_exists(&db_uri).await.unwrap_or(false) {
-                Sqlite::create_database(&db_uri).await.unwrap();
-                match Self::create_schema(&db_uri).await{
+            if !Sqlite::database_exists(db_uri.as_str()).await.unwrap_or(false) {
+                Sqlite::create_database(db_uri.as_str()).await.unwrap();
+                match Self::apply_schema(&db_uri, component_type).await{
                     Ok(_) => (),
                     Err(e) => panic!("{:?}",e)
                 }
             }
-            SqlitePool::connect(&db_uri).await.unwrap()
+            SqlitePool::connect(db_uri.as_str()).await.unwrap()
         }
     }}
     // Panic if Database doesn't exists
-    pub async fn open(db_uri: &'static str) -> Self { Self {
-        db_uri,
+    pub async fn open(db_uri: String) -> Self { Self {
+        db_uri: db_uri.clone(),
         pool: {
-            match Sqlite::database_exists(&db_uri).await {
-                Ok(true) => match SqlitePool::connect(&db_uri).await {
+            match Sqlite::database_exists(db_uri.as_str()).await {
+                Ok(true) => match SqlitePool::connect(db_uri.as_str()).await {
                     Ok(v) => v,
                     Err(e) => panic!("{:?}",e)
                 },
@@ -38,94 +41,30 @@ impl interface_SQLite {
     pub async fn close(&self) -> () {
         self.pool.close().await;
     }
-    pub async fn create_schema(db_url: &str) -> Result<SqliteQueryResult, sqlx::Error>{
-        let temp_pool = SqlitePool::connect(&db_url).await?;
-
-        // Creating a Header to the db File
-        let mut qry = String::from(
-        "PRAGMA foreign_keys = ON;
-        CREATE TABLE IF NOT EXISTS component (
-            component_name TEXT PRIMARY KEY NOT NULL,
-            component_type TEXT NOT NULL,
-            input_output_number BLOB NOT NULL,
-            processed_number BLOB DEFAULT 0,
-            update_on DATETIME DEFAULT (datetime('now','localtime'))
-        );");
-
-        // Makes the Data Table specifically for the Component
-        qry.insert_str(qry.len(),"
-        CREATE TABLE IF NOT EXISTS data (
-            data_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            time DATETIME NOT NULL,
-            pressure_stream_1 BLOB NOT NULL, --Pa--
-            pressure_stream_2 BLOB NOT NULL, --Pa--
-            massflow_stream_1 BLOB NOT NULL, --g/s--
-            massflow_stream_2 BLOB NOT NULL, --g/s--
-            temperature_stream_1_inlet BLOB NOT NULL, --K--
-            temperature_stream_1_outlet BLOB NOT NULL, --K--
-            temperature_stream_2_inlet BLOB NOT NULL, --K--
-            temperature_stream_2_outlet BLOB NOT NULL --K--
-        );");
-
-        // Still deciding whether this should exsist here
-        // qry.insert_str(qry.len(),"
-        // CREATE TABLE IF NOT EXISTS process (
-        //     process_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        //     a INTEGER NOT NULL
-        // );");
-
-        // TEMP creates Hx called test
-        qry.insert_str(qry.len(), "
-        INSERT INTO component (
-            component_name, 
-            component_type, 
-            input_output_number, 
-            processed_number
-        ) Values(
-            'test',
-            'HeatExchanger',
-            '8',
-            '0' 
-        );");
-
-        let qry = qry.as_str(); // Squishes mut String into !mut &str
-        let result = sqlx::query(&qry).execute(&temp_pool).await;
+    pub async fn apply_schema(db_url: &String, component_type: Component<'_>) -> Result<SqliteQueryResult, sqlx::Error>{
+        let temp_pool = SqlitePool::connect(&db_url.to_string()).await?;
+        let qry: String = match component_type {
+            Component::HeatExchanger(v) => (*v).create_schema_heat_exchanger()
+        };
+        let result = sqlx::query(qry.as_str()).execute(&temp_pool).await;
         temp_pool.close().await;
         return result;
     }
-    pub async fn add_data(&self) -> Result<SqliteQueryResult, sqlx::Error> {
-        let qry = "
-            UPDATE component SET update_on = datetime('now','localtime');
-            INSERT INTO data (
-                time,
-                pressure_stream_1,
-                pressure_stream_2,
-                massflow_stream_1,
-                massflow_stream_2,
-                temperature_stream_1_inlet,
-                temperature_stream_1_outlet,
-                temperature_stream_2_inlet,
-                temperature_stream_2_outlet
-            ) Values(
-                datetime('now','localtime'),
-                '101325',
-                '101325',
-                '18.003',
-                '18.003',
-                '300',
-                '200',
-                '200',
-                '300'
-            );"
-        ;
-        sqlx::query(&qry).execute(&self.pool).await
+    pub async fn query(&self, query: String) -> Result<SqliteQueryResult, sqlx::Error> {
+        sqlx::query(query.as_str()).execute(&self.pool).await
     }
     // ..
 }
 
 pub async fn sqlite_main_twostreamhx() {
-    let db_uri = "sqlite://data/components/heat_exchanger/twostreamhx.db";
-    let comp = interface_SQLite::open(&db_uri).await;
-    _ = comp.add_data().await;
-    comp.close().await;
+    // let db_uri = "sqlite://data/components/heat_exchanger/twostreamhx.db";
+    // let comp = interface_SQLite::open(&db_uri).await;
+    let mut hx001 = HeatExchanger::new(2, String::from("test")).await;
+    hx001.open_new().await;
+    let data = vec![
+        Stream::new(Pressure::Pascal(101325.), Massflow::GramPerSecond(18.), Temperature::Kelvin(280.), Temperature::Kelvin(300.)), 
+        Stream::new(Pressure::Pascal(101325.), Massflow::GramPerSecond(18.), Temperature::Kelvin(300.), Temperature::Kelvin(280.))
+    ];
+    hx001.add_data(String::from("2023-07-01T00:00:00.000Z"),data).await;
+    hx001.close().await;
 }
