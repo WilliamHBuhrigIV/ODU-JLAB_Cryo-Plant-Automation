@@ -4,6 +4,11 @@ use super::{common_enums::*, interface_sqlite::interface_SQLite};
 // Heatexchanger Struct Declarations
 ////////////////////////////////////////////////////////////////////////////////
 
+pub struct Streams {
+    time: Time,
+    streams: Vec<Stream>
+}
+
 pub struct Stream {
     pressure: Pressure,
     massflow: Massflow,
@@ -15,13 +20,19 @@ pub struct Stream {
 pub struct HeatExchanger {
     name: String,
     stream_number: u64,
-    streams: Vec<Stream>,
     data_interface: Option<interface_SQLite>
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inherent methods for Heatexchanger
 ////////////////////////////////////////////////////////////////////////////////
+
+impl Streams {
+    pub fn new(time: Time, streams: Vec<Stream>) -> Self { Streams {
+        time,
+        streams
+    }}
+}
 
 impl Stream {
     pub fn new(pressure: Pressure, massflow: Massflow, temperature_input: Temperature, temperature_output: Temperature) -> Self { Stream {
@@ -36,7 +47,6 @@ impl HeatExchanger {
     pub async fn new(stream_number: u64,name: String) -> Self { Self {
         name: name.clone(),
         stream_number,
-        streams: Vec::new(),
         data_interface: None
     }}
     pub async fn close(&self) -> () {
@@ -98,8 +108,8 @@ impl HeatExchanger {
         );");
         return qry;
     }
-    pub async fn add_data(&self, common_datetime: String, data_points: Vec<Stream>) -> () {
-        if data_points.len() < self.stream_number.try_into().unwrap() {
+    pub async fn add_data(&self, streams: Streams) -> () {
+        if streams.streams.len() < self.stream_number.try_into().unwrap() {
             panic!("Stream Number Too High or Not Enough Data Point Streams Provided!");
         }
         let mut add_data_query = String::from("
@@ -107,18 +117,19 @@ impl HeatExchanger {
             INSERT INTO data (
                 time,
                 pressure_stream_1,
-                pressure_stream_2,
                 massflow_stream_1,
-                massflow_stream_2,
                 temperature_stream_1_inlet,
                 temperature_stream_1_outlet,
+                pressure_stream_2,
+                massflow_stream_2,
                 temperature_stream_2_inlet,
                 temperature_stream_2_outlet
             ) Values(");
         add_data_query += format!("
-                datetime('{t}')",t=common_datetime
-        ).as_str();
-        for (_, stream_item) in data_points.iter().enumerate() {
+                datetime('{}')",
+                streams.time,
+            ).as_str();
+        for (_, stream_item) in streams.streams.iter().enumerate() {
             add_data_query += format!(",
                 '{}',
                 '{}',

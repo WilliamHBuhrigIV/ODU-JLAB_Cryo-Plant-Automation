@@ -1,6 +1,6 @@
 use sqlx::{migrate::MigrateDatabase, sqlite::SqliteQueryResult, Pool, Sqlite, SqlitePool};
 
-use super::{common_enums::*, heat_exchanger::*};
+use super::{common_enums::*, file_csv::CSV, heat_exchanger::*};
 
 #[allow(dead_code)]
 #[allow(non_camel_case_types)]
@@ -61,10 +61,31 @@ pub async fn sqlite_main_twostreamhx() {
     // let comp = interface_SQLite::open(&db_uri).await;
     let mut hx001 = HeatExchanger::new(2, String::from("test")).await;
     hx001.open_new().await;
-    let data = vec![
-        Stream::new(Pressure::Pascal(101325.), Massflow::GramPerSecond(18.), Temperature::Kelvin(280.), Temperature::Kelvin(300.)), 
-        Stream::new(Pressure::Pascal(101325.), Massflow::GramPerSecond(18.), Temperature::Kelvin(300.), Temperature::Kelvin(280.))
-    ];
-    hx001.add_data(String::from("2023-07-01T00:00:00.000Z"),data).await;
+    let test_csv: CSV = CSV::new("./data/components/heat_exchanger/test.csv");
+    let data_csv: Vec<Vec<Data>> = test_csv.load_self_data();
+    let mut data: Vec<Stream> = Vec::new();
+    // for (_, item) in data_csv.iter().enumerate() {
+    //     data.push(Stream::new(
+    //         Time::SQL(item[0].clone()),
+    //         Pressure::Pascal(item[1].clone()),
+    //         Massflow::GramPerSecond(item[2].clone()),
+    //         Temperature::Kelvin(item[3].clone()),
+    //         Temperature::Kelvin(item[4].clone())
+    //     ));
+    // }
+    data.push(Stream::new(
+        Pressure::Pascal(data_csv[1][0].clone()),
+        Massflow::GramPerSecond(data_csv[2][0].clone()),
+        Temperature::Kelvin(data_csv[3][0].clone()),
+        Temperature::Kelvin(data_csv[4][0].clone())
+    ));
+    data.push(Stream::new(
+        Pressure::Pascal(data_csv[1][0].clone()),
+        Massflow::GramPerSecond(data_csv[2][0].clone()),
+        Temperature::Kelvin(data_csv[3][0].clone()),
+        Temperature::Kelvin(data_csv[4][0].clone())
+    ));
+    let streams: Streams = Streams::new(Time::SQL(data_csv[0][0].clone()), data);
+    hx001.add_data(streams).await;
     hx001.close().await;
 }
